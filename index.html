@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Power BI Theme Studio</title>
+<meta name="description" content="Design Power BI themes, backgrounds, layouts and landing pages, then download the theme JSON and background images.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#EDEFF3;--panel:#FFFFFF;--ink:#1B2230;--mute:#667085;--line:#D9DEE7;--accent:#2457F5;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151C;--panel:#1B2030;--ink:#E8ECF4;--mute:#97A0B3;--line:#2C3347;--accent:#6C8CFF}}
+:root[data-theme="dark"]{--bg:#12151C;--panel:#1B2030;--ink:#E8ECF4;--mute:#97A0B3;--line:#2C3347;--accent:#6C8CFF}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Bricolage Grotesque',system-ui,-apple-system,'Segoe UI',sans-serif;line-height:1.45}
+.app{display:grid;grid-template-columns:360px minmax(0,1fr);gap:20px;max-width:1560px;margin:0 auto;padding:20px}
+@media(max-width:900px){.app{grid-template-columns:1fr;padding:12px}}
+@media(min-width:901px){aside.panel{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto;align-self:start}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+h1{font-size:22px;font-weight:800;margin:0 0 4px;letter-spacing:-.02em}
+.sub{color:var(--mute);font-size:13px;margin:0 0 12px}
+details{border-top:1px solid var(--line);padding:10px 0}
+summary{font-weight:600;font-size:14px;cursor:pointer;padding:2px 0}
+.presets{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:10px 0}
+.preset{display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--line);border-radius:8px;background:transparent;color:var(--ink);font:inherit;font-size:12px;cursor:pointer;text-align:left}
+.preset:hover,.preset:focus-visible{border-color:var(--accent);outline:none}
+.preset .sw{display:flex;flex:none}.preset i{width:10px;height:18px;display:block}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 0;font-size:13px}
+.w{display:flex;align-items:center;gap:8px}
+output{font-size:12px;min-width:22px;text-align:right;color:var(--mute)}
+.colors{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.colors label,.dyn label{display:flex;flex-direction:column;gap:4px;font-size:11px;color:var(--mute)}
+.dyn{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.cap{font-size:12px;color:var(--mute);margin:8px 0 0}
+input[type=color]{width:100%;height:34px;border:1px solid var(--line);border-radius:8px;padding:2px;background:var(--panel);cursor:pointer}
+.row input[type=color]{width:60px}
+[hidden]{display:none!important}
+.tabs{display:flex;gap:8px}.tabs button{font:inherit;font-size:13px;font-weight:600;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}.tabs button[aria-selected=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--ink);padding:20px;max-width:380px;width:92%}dialog::backdrop{background:rgba(0,0,0,.5)}dialog h2{font-size:18px;margin:0 0 6px}.msg a{color:var(--accent)}
+select,input[type=text],input[type=password],input[type=number]{width:150px;font:inherit;font-size:13px;padding:6px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+.dyn select{width:100%}input[type=range]{width:110px}
+button.act{font:inherit;font-weight:600;font-size:14px;padding:11px 14px;border-radius:10px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;width:100%;margin-top:8px}
+button.act.alt{background:transparent;color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.msg{font-size:12px;color:var(--mute);min-height:18px;margin-top:8px}
+.stage{display:flex;flex-direction:column;gap:14px;min-width:0}
+.frame{position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:#fff}
+.canvasbox{position:absolute;left:0;top:0;width:1280px;height:720px;transform-origin:0 0;background-size:100% 100%}
+#mock{position:absolute;inset:0}
+#mock>div[style*="border-radius:14px"]{transition:box-shadow .15s,transform .15s}
+#mock>div[style*="border-radius:14px"]:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.28)}
+.warn{font-size:13px;color:#D97706;min-height:0}
+.out{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:700px){.out{grid-template-columns:1fr}}
+.out h2{font-size:14px;font-weight:600;margin:0 0 8px}
+textarea{width:100%;height:220px;font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);padding:10px;resize:vertical}
+.help{font-size:13px;color:var(--mute);margin:0}.help ol{padding-left:18px;margin:6px 0 0}.help li{margin-bottom:6px}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="panel">
+  <h1>Power BI Theme Studio</h1>
+  <p class="sub">Design the theme, background and page layout. The preview updates as you change anything.</p>
+  <div id="ctl"></div>
+  <details open><summary>Export</summary>
+    <button class="act" id="dlTheme">Download theme (.json)</button>
+    <button class="act" id="dlBg">Download background, no text (.png)</button>
+    <button class="act" id="dlLand">Download landing page background, no text (.png)</button>
+    <button class="act alt" id="copyJson">Copy theme JSON</button>
+    <div class="msg" id="msg" role="status"></div>
+    <div class="msg" id="quota"></div>
+  </details>
+</aside>
+<main class="stage">
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><div class="tabs" id="tabs" role="tablist"><button id="tDash" role="tab">Dashboard page</button><button id="tLand" role="tab">Landing page</button></div><span class="cap" id="sz" style="margin:0"></span></div>
+  <div class="frame" id="frame"><div class="canvasbox" id="box"><div id="mock"></div></div></div>
+  <div class="warn" id="warn" role="status"></div>
+  <div class="panel out">
+    <div><h2>Theme JSON</h2><textarea id="json" readonly aria-label="Theme JSON"></textarea></div>
+    <div><h2>Use it in Power BI Desktop</h2>
+      <p class="help"><ol>
+        <li>Import the theme: <b>View → Themes → Browse for themes</b>.</li>
+        <li>Set the background: <b>Format page → Canvas background → Image</b>, transparency 0%, fit "Fit". The image has only shapes and no text: bands, nav button shapes, card tiles, KPI icons and the KPI color stripe. With tiles on, the theme makes visuals transparent so they sit on the tiles.</li>
+        <li>The heading text, logo, nav buttons, KPI cards, charts and tables in the preview are placeholders. Add your own visuals over the open areas.</li>
+        <li>Bar width, chart types and table options are preview-only. Set them in Power BI under each visual's Format pane.</li>
+        <li>Fonts and brand colors are written into the theme JSON. Use fonts Power BI ships with, because other fonts only render where installed.</li>
+        <li>Tile shadows are drawn into the PNG. Hover effects cannot be stored in an image, so they only show in this preview. In Power BI use each visual's Effects settings or button hover states. Alignment is preview-only, except chart title alignment, which goes into the theme.</li>
+        <li>The theme JSON also carries your status colors (good, neutral, bad, null), heading and body text colors, brand data colors and fonts.</li>
+        <li>Landing page: use the landing PNG as the canvas background of page 1. Add text boxes for the heading and description, and a button linking to page 2, over the shapes.</li>
+        <li>Canvas size: choose the same size in Power BI under Format page, Canvas settings, Type. 16:9 is 1280 × 720.</li>
+      </ol></p></div>
+  </div>
+</main>
+</div>
+<dialog id="dlg" aria-labelledby="dlgT">
+  <h2 id="dlgT">Log in to keep downloading</h2>
+  <p class="cap" id="dlgM"></p>
+  <button class="act alt" id="gBtn">Continue with Google</button>
+  <div id="authRows">
+    <div class="row"><label for="em">Email</label><input type="text" id="em" autocomplete="email"></div>
+    <div class="row"><label for="pw">Password</label><input type="password" id="pw" autocomplete="current-password"></div>
+    <button class="act" id="siBtn">Log in</button>
+    <button class="act alt" id="suBtn">Create account</button>
+  </div>
+  <div class="msg" id="dlgE" role="alert"></div>
+  <button class="act alt" id="dlgX">Close</button>
+</dialog>
+<script src="config.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+let W=1280,H=720;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const PAL={Ocean:["#0B6EFD","#00B8D9","#36CFC9","#5B8DEF","#1D3A8A","#9AD1FF"],Sunset:["#FF6B35","#F7B801","#E4405F","#8E2DE2","#FF9F1C","#2E294E"],Forest:["#2D6A4F","#52B788","#95D5B2","#B7791F","#1B4332","#D4A373"],Grape:["#6D28D9","#A855F7","#EC4899","#F59E0B","#3B0764","#C4B5FD"],Mono:["#111827","#374151","#6B7280","#9CA3AF","#D1D5DB","#2563EB"],Blinkit:["#F8CB46","#0C831F","#1F1F1F","#FFB800","#5DB075","#E8E8E8"]};
+// Feather-style 24px icons, one per KPI criterion
+const MET={rev:["Revenue","$2.4M","M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"],
+ord:["Orders","18,420","M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6M10 21h.01M20 21h.01"],
+cus:["Customers","6,310","M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"],
+pro:["Profit","$610K","M23 6l-9.5 9.5-5-5L1 18M17 6h6v6"],
+gro:["Growth","+12.4%","M7 17L17 7M7 7h10v10"],
+qty:["Units sold","42,980","M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16zM3.27 6.96L12 12.01l8.73-5.05M12 22.08V12"],
+rat:["Rating","4.6","M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"],
+ret:["Returns","2.1%","M1 4v6h6M3.51 15a9 9 0 1 0 2.13-9.36L1 10"],
+del:["Avg. delivery","28 min","M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 6v6l4 2"],
+dis:["Discount","8.5%","M19 5L5 19M6.5 9a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5zM17.5 20a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"]};
+const CT=[["col","Column"],["bar","Bar (horizontal)"],["line","Line"],["area","Area"],["stack","Stacked column"],["donut","Donut"],["pie","Pie"]];
+const CTITLE={col:"Sales by category",bar:"Top products",line:"Monthly trend",area:"Cumulative revenue",stack:"Revenue by channel",donut:"Share by region",pie:"Order mix"};
+const RH={compact:26,normal:32,roomy:40};
+const S={data:PAL.Ocean.slice(),bgType:"gradient",bgA:"#0F172A",bgB:"#1E3A8A",angle:135,card:"#FFFFFF",opacity:90,text:"#0F172A",size:{preset:"169",w:1280,h:720},land:{on:true,layout:"center",head:"Sales Performance",kick:"Monthly report",sub:"Revenue, orders and customer trends at a glance.",btn:"View report"},view:"dash",title:"#0F172A",sc:{good:"#02970F",neutral:"#FFF08F",bad:"#E60415",nul:"#CCCCCC"},za:92,zones:true,zone:"#0B1220",logo:null,tiles:true,shadow:"soft",al:{head:"left",nav:"left",kpi:"left",chart:"left",table:"right",foot:"left"},brand:{c1:"#2457F5",c2:"#00B8D9",c3:"#F59E0B",harmony:"analogous",hf:"Segoe UI",bf:"Segoe UI"},
+ nav:{pos:"left",items:"Overview, Sales, Products, Regions, Settings"},
+ head:{on:true,mode:"text",title:"Sales overview",sub:"Year to date"},
+ foot:{on:true,text:"Last refresh today 08:00"},
+ kpi:{on:true,per:4,rows:1,icon:"left",m:["rev","ord","cus","pro","gro","qty","rat","ret","del","dis","rev","ord"]},
+ ch:{on:true,rows:1,per:3,bw:60,rad:5,labels:false,grid:true,types:["col","donut","line","bar","area","stack","pie","col","line","donut","bar","area"]},
+ tb:{on:true,kind:"table",rows:6,cols:4,place:"below",dens:"normal",hdr:true,band:true,grid:true,total:false,cf:true}};
+const LAY={
+ Executive:{nav:{pos:"top"},head:{on:true,mode:"both"},kpi:{on:true,per:4,rows:1},ch:{on:true,rows:1,per:2,types:["col","donut"]},tb:{on:false},foot:{on:true}},
+ Analyst:{nav:{pos:"left"},head:{on:true,mode:"text"},kpi:{on:true,per:4,rows:1},ch:{on:true,rows:1,per:2,types:["line","col"]},tb:{on:true,kind:"matrix",rows:6,cols:6,place:"below",dens:"normal"},foot:{on:true}},
+ Operations:{nav:{pos:"none"},head:{on:true,mode:"both"},kpi:{on:true,per:3,rows:2},ch:{on:true,rows:2,per:2,types:["bar","donut","area","stack"]},tb:{on:true,kind:"table",rows:8,cols:4,place:"right",dens:"normal"},foot:{on:false}},
+ "KPI strip":{nav:{pos:"none"},head:{on:true,mode:"text"},kpi:{on:true,per:6,rows:1},ch:{on:true,rows:1,per:3,types:["col","line","donut"]},tb:{on:false},foot:{on:true}},
+ "Table focus":{nav:{pos:"left"},head:{on:true,mode:"text"},kpi:{on:true,per:4,rows:1},ch:{on:false},tb:{on:true,kind:"table",rows:12,cols:6,place:"below",dens:"compact"},foot:{on:true}},
+ "Chart gallery":{nav:{pos:"top"},head:{on:true,mode:"text"},kpi:{on:false},ch:{on:true,rows:2,per:3,types:["col","line","donut","bar","area","stack"]},tb:{on:false},foot:{on:true}},
+ Scorecard:{nav:{pos:"none"},head:{on:true,mode:"both"},kpi:{on:true,per:4,rows:2},ch:{on:true,rows:1,per:2,types:["line","bar"]},tb:{on:false},foot:{on:false}},
+ "Split view":{nav:{pos:"top"},head:{on:true,mode:"text"},kpi:{on:true,per:3,rows:1},ch:{on:true,rows:2,per:1,types:["line","col"]},tb:{on:true,kind:"table",rows:8,cols:4,place:"right",dens:"normal"},foot:{on:true}},
+ "Table first":{nav:{pos:"left"},head:{on:true,mode:"text"},kpi:{on:true,per:3,rows:1},ch:{on:true,rows:1,per:2,types:["col","pie"]},tb:{on:true,kind:"table",rows:5,cols:5,place:"above",dens:"normal"},foot:{on:true}},
+ "Matrix report":{nav:{pos:"left"},head:{on:true,mode:"text"},kpi:{on:false},ch:{on:false},tb:{on:true,kind:"matrix",rows:10,cols:6,place:"below",dens:"normal"},foot:{on:true}},
+ Minimal:{nav:{pos:"none"},head:{on:true,mode:"text"},kpi:{on:true,per:3,rows:1},ch:{on:true,rows:1,per:2,types:["area","donut"]},tb:{on:false},foot:{on:false}}};
+
+// ---------- fonts and brand palette ----------
+const FONTS={"Segoe UI":"'Segoe UI',system-ui,sans-serif","Segoe UI Semibold":"'Segoe UI Semibold','Segoe UI',system-ui,sans-serif","Segoe UI Light":"'Segoe UI Light','Segoe UI',system-ui,sans-serif","Arial":"Arial,Helvetica,sans-serif","Calibri":"Calibri,Carlito,sans-serif","Candara":"Candara,Optima,sans-serif","Corbel":"Corbel,sans-serif","Georgia":"Georgia,serif","Tahoma":"Tahoma,sans-serif","Trebuchet MS":"'Trebuchet MS',sans-serif","Verdana":"Verdana,sans-serif","Times New Roman":"'Times New Roman',serif","DIN":"DIN,Bahnschrift,'Arial Narrow',sans-serif"};
+const FONT_OPTS=Object.keys(FONTS).map(k=>[k,k]);
+const AL=[['left','Left'],['center','Middle'],['right','Right']];
+const SH={none:null,soft:[16,4,.25],medium:[24,8,.35],strong:[36,12,.5]};
+const LL=[['center','Centered card'],['left','Left hero'],['split','Split with contents'],['banner','Banner with page cards'],['cover','Full cover']];
+const SZ={'169':[1280,720],'43':[960,720],letter:[816,1056],hd:[1920,1080],tooltip:[320,240]};
+function hsl(h,s,l){h=((h%360)+360)%360;s/=100;l/=100;const a=s*Math.min(l,1-l),f=n=>{const k=(n+h/30)%12;return l-a*Math.max(-1,Math.min(k-3,9-k,1))};return '#'+[f(0),f(8),f(4)].map(x=>Math.round(x*255).toString(16).padStart(2,'0')).join('').toUpperCase()}
+function toHsl(hex){const n=parseInt(hex.slice(1),16),r=(n>>16)/255,g=(n>>8&255)/255,b=(n&255)/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2;let h=0,s=0;if(mx!==mn){const d=mx-mn;s=l>.5?d/(2-mx-mn):d/(mx+mn);h=mx===r?(g-b)/d+(g<b?6:0):mx===g?(b-r)/d+2:(r-g)/d+4;h*=60}return[h,s*100,l*100]}
+function genPalette(){
+  const B=S.brand,[h,sv,l]=toHsl(B.c1),k=B.harmony,sa=Math.max(45,Math.min(sv,90)),lm=Math.max(40,Math.min(l,58)),cl=x=>Math.max(14,Math.min(90,x));
+  let p;
+  if(k==='mono')p=[B.c1,hsl(h,sv,cl(l-18)),hsl(h,sv,cl(l+16)),hsl(h,sv,cl(l+28)),hsl(h,sv,cl(l-30)),hsl(h,sv*.5,cl(l+38))];
+  else if(k==='brand'){const t=c=>{const[a,b,q]=toHsl(c);return hsl(a,b,cl(q+24))};p=[B.c1,B.c2,B.c3,t(B.c1),t(B.c2),t(B.c3)]}
+  else{const O={analogous:[0,30,-30,60,-60,15],comp:[0,180,20,200,-20,160],split:[0,150,210,30,180,-30],triad:[0,120,240,30,150,270],tetrad:[0,90,180,270,45,225]}[k];
+    p=O.map((o,i)=>i?hsl(h+o,sa,i<3?lm:cl(lm+14)):B.c1)}
+  S.data=p;buildData();update();
+}
+function applyBrand(){
+  Object.assign(S,{bgType:'solid',bgA:'#F4F6F7',bgB:'#F4F6F7',card:'#FFFFFF',opacity:100,text:'#000000',title:'#0D4C5C',zone:'#E60415',za:100,shadow:'soft'});
+  Object.assign(S.sc,{good:'#02970F',neutral:'#FFF08F',bad:'#E60415',nul:'#CCCCCC'});
+  Object.assign(S.brand,{c1:'#E60415',c2:'#0D4C5C',c3:'#02970F',harmony:'brand'});
+  SYNC.forEach(f=>f());genPalette();
+}
+function brandBg(){const[h,sv]=toHsl(S.brand.c1);S.bgA=hsl(h,Math.min(sv,60),11);S.bgB=hsl(h,Math.min(sv,70),26);SYNC.forEach(f=>f());update()}
+
+// ---------- controls ----------
+const SYNC=[];
+function sec(t,open){const d=document.createElement('details');d.open=!!open;d.innerHTML='<summary>'+t+'</summary>';$('ctl').appendChild(d);return d}
+function ctl(sc,label,o,k,type,opt,dyn,fn){
+  const id='c'+SYNC.length,r=document.createElement('div'),l=document.createElement('label'),w=document.createElement('span');
+  r.className='row';w.className='w';l.htmlFor=id;l.textContent=label;
+  let e,out;
+  if(type==='select'){e=document.createElement('select');opt.forEach(a=>e.add(new Option(a[1],a[0])))}
+  else{e=document.createElement('input');e.type=type;if(type==='range'||type==='number'){e.min=opt[0];e.max=opt[1]}}
+  e.id=id;w.appendChild(e);
+  if(type==='range'){out=document.createElement('output');w.appendChild(out)}
+  const sy=()=>{if(type==='checkbox')e.checked=!!o[k];else e.value=o[k];if(out)out.textContent=e.value};
+  e.oninput=e.onchange=()=>{o[k]=type==='checkbox'?e.checked:type==='range'||type==='number'?+e.value:e.value;if(out)out.textContent=e.value;if(fn)fn();update(dyn)};
+  SYNC.push(sy);sy();r.append(l,w);sc.appendChild(r);
+}
+function dynBox(sc,id,cap){const c=document.createElement('p');c.className='cap';c.textContent=cap;const b=document.createElement('div');b.className='dyn';b.id=id;sc.append(c,b)}
+function dyn(id,n,arr,opts,pre){const b=$(id);b.innerHTML='';for(let i=0;i<n;i++){const l=document.createElement('label'),s=document.createElement('select');opts.forEach(a=>s.add(new Option(a[1],a[0])));s.value=arr[i]||opts[0][0];arr[i]=s.value;s.onchange=()=>{arr[i]=s.value;update()};l.append(pre+(i+1),s);b.appendChild(l)}}
+function buildDyn(){dyn('kBox',S.kpi.per*S.kpi.rows,S.kpi.m,Object.keys(MET).map(k=>[k,MET[k][0]]),'KPI ');dyn('cBox',S.ch.per*S.ch.rows,S.ch.types,CT,'Chart ')}
+function buildData(){const b=$('dataColors');b.innerHTML='';S.data.forEach((c,i)=>{const l=document.createElement('label'),n=document.createElement('input');n.type='color';n.value=c;n.setAttribute('aria-label','Data color '+(i+1));n.oninput=()=>{S.data[i]=n.value;update()};l.append('Color '+(i+1),n);b.appendChild(l)})}
+function applyLay(p){for(const k in p)Object.assign(S[k],p[k]);SYNC.forEach(f=>f());update(true)}
+
+let s=sec('Canvas size (px)',true);
+ctl(s,'Page size',S.size,'preset','select',[['169','16:9 (1280 × 720)'],['43','4:3 (960 × 720)'],['letter','Letter (816 × 1056)'],['hd','Full HD (1920 × 1080)'],['tooltip','Tooltip (320 × 240)'],['custom','Custom']],0,()=>{const z=S.size;if(z.preset!=='custom'){z.w=SZ[z.preset][0];z.h=SZ[z.preset][1]}applySize()});
+ctl(s,'Width (px)',S.size,'w','number',[200,4000],0,()=>{S.size.preset='custom';applySize()});
+ctl(s,'Height (px)',S.size,'h','number',[200,4000],0,()=>{S.size.preset='custom';applySize()});
+const zc=document.createElement('p');zc.className='cap';zc.textContent='Use the same size in Power BI: Format page, Canvas settings, Type. Downloaded PNGs match this exact size.';s.appendChild(zc);
+
+s=sec('Layout presets and palette',true);
+const lp=document.createElement('div');lp.className='presets';
+Object.keys(LAY).forEach(n=>{const b=document.createElement('button');b.className='preset';b.textContent=n+' layout';b.onclick=()=>applyLay(LAY[n]);lp.appendChild(b)});
+const pp=document.createElement('div');pp.className='presets';
+Object.entries(PAL).forEach(([n,c])=>{const b=document.createElement('button');b.className='preset';b.innerHTML='<span class="sw">'+c.map(x=>'<i style="background:'+x+'"></i>').join('')+'</span>'+n;b.onclick=()=>{S.data=c.slice();buildData();update()};pp.appendChild(b)});
+s.append(lp,pp);const dc=document.createElement('div');dc.className='colors';dc.id='dataColors';s.appendChild(dc);
+
+s=sec('Brand colors and fonts');
+ctl(s,'Primary brand color',S.brand,'c1','color',null,0,genPalette);
+ctl(s,'Secondary color',S.brand,'c2','color',null,0,genPalette);
+ctl(s,'Accent color',S.brand,'c3','color',null,0,genPalette);
+ctl(s,'Palette style',S.brand,'harmony','select',[['analogous','Analogous'],['mono','Monochromatic'],['comp','Complementary'],['split','Split complementary'],['triad','Triadic'],['tetrad','Tetradic'],['brand','Brand colors and tints']],0,genPalette);
+const bb=document.createElement('div');bb.className='row';bb.innerHTML='<button class="act" id="gen" style="margin:0">Regenerate palette</button><button class="act alt" id="genBg" style="margin:0">Brand background</button>';s.appendChild(bb);
+$('gen').onclick=genPalette;$('genBg').onclick=brandBg;
+const ab=document.createElement('div');ab.className='row';ab.innerHTML='<button class="act" id="myBrand" style="margin:0">Apply my brand theme</button>';s.insertBefore(ab,s.children[1]);$('myBrand').onclick=applyBrand;
+ctl(s,'Heading font',S.brand,'hf','select',FONT_OPTS);
+ctl(s,'Body font',S.brand,'bf','select',FONT_OPTS);
+const fc=document.createElement('p');fc.className='cap';fc.textContent='Changing a brand color or palette style rebuilds the 6 data colors. Stick to fonts Power BI ships with; other fonts only show where installed.';s.appendChild(fc);
+
+s=sec('Landing page (first page)');
+ctl(s,'Include landing page',S.land,'on','checkbox',null,0,syncView);
+ctl(s,'Landing layout',S.land,'layout','select',LL);
+ctl(s,'Big heading',S.land,'head','text');
+ctl(s,'Page title',S.land,'kick','text');
+ctl(s,'Description',S.land,'sub','text');
+ctl(s,'Button label',S.land,'btn','text');
+const lc=document.createElement('p');lc.className='cap';lc.textContent='Switch the preview with the tabs above it. Layouts 3 and 4 list your navigation items as page cards. Clear the button label to remove the button.';s.appendChild(lc);
+
+s=sec('Heading, navigation, footer');
+ctl(s,'Show heading',S.head,'on','checkbox');
+ctl(s,'Heading content',S.head,'mode','select',[['text','Text only'],['both','Logo and text'],['logo','Logo only']]);
+ctl(s,'Title',S.head,'title','text');ctl(s,'Subtitle',S.head,'sub','text');ctl(s,'Heading alignment',S.al,'head','select',AL);
+const lr=document.createElement('div');lr.className='row';lr.innerHTML='<label for="logoFile">Logo image</label><input type="file" id="logoFile" accept="image/*" style="width:150px;font-size:12px">';s.appendChild(lr);
+ctl(s,'Navigation',S.nav,'pos','select',[['left','Left sidebar'],['top','Top bar'],['none','None']]);
+ctl(s,'Nav items',S.nav,'items','text');ctl(s,'Nav alignment',S.al,'nav','select',AL);
+ctl(s,'Show footer',S.foot,'on','checkbox');ctl(s,'Footer text',S.foot,'text','text');ctl(s,'Footer alignment',S.al,'foot','select',AL);
+ctl(s,'Draw bands in background',S,'zones','checkbox');ctl(s,'Band color',S,'zone','color');ctl(s,'Band opacity',S,'za','range',[40,100]);
+ctl(s,'Tiles, icons, stripes in background (no text)',S,'tiles','checkbox');
+ctl(s,'Tile shadow',S,'shadow','select',[['none','None'],['soft','Soft'],['medium','Medium'],['strong','Strong']]);
+
+s=sec('KPI cards');
+ctl(s,'Show KPIs',S.kpi,'on','checkbox');
+ctl(s,'KPIs per row',S.kpi,'per','range',[1,6],true);
+ctl(s,'KPI rows',S.kpi,'rows','range',[1,2],true);
+ctl(s,'Icon',S.kpi,'icon','select',[['left','Left'],['right','Right'],['none','No icon']]);ctl(s,'Content alignment',S.al,'kpi','select',AL);
+dynBox(s,'kBox','Metric for each KPI. The icon is picked to match the metric.');
+
+s=sec('Charts');
+ctl(s,'Show charts',S.ch,'on','checkbox');
+ctl(s,'Chart rows',S.ch,'rows','range',[1,3],true);
+ctl(s,'Charts per row',S.ch,'per','range',[1,4],true);
+ctl(s,'Bar / column width %',S.ch,'bw','range',[20,95]);
+ctl(s,'Corner radius',S.ch,'rad','range',[0,20]);
+ctl(s,'Data labels',S.ch,'labels','checkbox');ctl(s,'Gridlines',S.ch,'grid','checkbox');ctl(s,'Title alignment',S.al,'chart','select',AL);
+dynBox(s,'cBox','Type for each chart.');
+
+s=sec('Table or matrix');
+ctl(s,'Show table',S.tb,'on','checkbox');
+ctl(s,'Type',S.tb,'kind','select',[['table','Table'],['matrix','Matrix (heat map)']]);
+ctl(s,'Rows',S.tb,'rows','range',[1,12]);ctl(s,'Columns',S.tb,'cols','range',[2,6]);
+ctl(s,'Placement',S.tb,'place','select',[['below','Below charts'],['above','Above charts'],['right','Right of charts']]);
+ctl(s,'Row density',S.tb,'dens','select',[['compact','Compact'],['normal','Normal'],['roomy','Roomy']]);
+ctl(s,'Header row',S.tb,'hdr','checkbox');ctl(s,'Banded rows',S.tb,'band','checkbox');ctl(s,'Grid lines',S.tb,'grid','checkbox');
+ctl(s,'Totals row',S.tb,'total','checkbox');ctl(s,'Data bars / heat',S.tb,'cf','checkbox');ctl(s,'Number alignment',S.al,'table','select',AL);
+
+s=sec('Background, cards, text and status colors');
+ctl(s,'Style',S,'bgType','select',[['gradient','Gradient'],['solid','Solid'],['dots','Dots'],['grid','Grid lines'],['waves','Waves'],['stripes','Diagonal stripes']]);
+ctl(s,'Color A',S,'bgA','color');ctl(s,'Color B',S,'bgB','color');ctl(s,'Angle',S,'angle','range',[0,360]);
+ctl(s,'Card color',S,'card','color');ctl(s,'Card opacity',S,'opacity','range',[0,100]);ctl(s,'Heading / title text',S,'title','color');ctl(s,'Table / body text',S,'text','color');
+ctl(s,'Positive (good)',S.sc,'good','color');ctl(s,'Neutral',S.sc,'neutral','color');ctl(s,'Negative (bad)',S.sc,'bad','color');ctl(s,'Null / empty values',S.sc,'nul','color');
+
+$('logoFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{S.logo=r.result;S.head.mode=S.head.mode==='text'?'both':S.head.mode;SYNC.forEach(x=>x());update()};r.readAsDataURL(f)};
+
+// ---------- background ----------
+function rgba(hex,o){const n=parseInt(hex.slice(1),16);return `rgba(${n>>16},${n>>8&255},${n&255},${o})`}
+function lum(h){const n=parseInt(h.slice(1),16);return(0.299*(n>>16)+0.587*(n>>8&255)+0.114*(n&255))/255}
+const on=c=>lum(c)<.55?'#FFFFFF':'#0F172A';
+function drawBg(ctx){
+  const t=S.bgType,a=S.bgA,b=S.bgB;
+  if(t==='gradient'||t==='waves'){
+    const r=S.angle*Math.PI/180,cx=W/2,cy=H/2,d=Math.hypot(W,H)/2;
+    const g=ctx.createLinearGradient(cx-Math.cos(r)*d,cy-Math.sin(r)*d,cx+Math.cos(r)*d,cy+Math.sin(r)*d);
+    g.addColorStop(0,a);g.addColorStop(1,b);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    if(t==='waves')for(let k=0;k<4;k++){ctx.beginPath();ctx.moveTo(0,H);for(let x=0;x<=W;x+=8)ctx.lineTo(x,H*(0.55+k*0.12)+Math.sin(x/140+k*1.7)*(26+k*8));ctx.lineTo(W,H);ctx.closePath();ctx.fillStyle='rgba(255,255,255,'+(0.06+k*0.03)+')';ctx.fill()}
+    return;
+  }
+  ctx.fillStyle=a;ctx.fillRect(0,0,W,H);
+  if(t==='dots'){ctx.fillStyle=b;ctx.globalAlpha=.35;for(let x=20;x<W;x+=32)for(let y=20;y<H;y+=32){ctx.beginPath();ctx.arc(x,y,3,0,7);ctx.fill()}}
+  else if(t==='grid'){ctx.strokeStyle=b;ctx.globalAlpha=.25;for(let x=0;x<=W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}for(let y=0;y<=H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}}
+  else if(t==='stripes'){ctx.strokeStyle=b;ctx.globalAlpha=.22;ctx.lineWidth=14;for(let x=-H;x<W;x+=48){ctx.beginPath();ctx.moveTo(x,H);ctx.lineTo(x+H,0);ctx.stroke()}}
+  ctx.globalAlpha=1;
+}
+function rr(ctx,x,y,w,h,r,keep){r=Math.min(r,w/2,h/2);if(!keep)ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
+function navRects(L){if(!L.nav)return[];const left=S.nav.pos==='left',it=S.nav.items.split(',').map(x=>x.trim()).filter(Boolean).slice(0,7),tot=it.length*126-8,a=S.al.nav,off=a==='center'?(L.nav.w-tot)/2:a==='right'?L.nav.w-24-tot:24;return it.map((n,i)=>left?{x:L.nav.x+16,y:L.nav.y+24+i*42,w:L.nav.w-32,h:36,n}:{x:L.nav.x+off+i*126,y:L.nav.y+10,w:118,h:36,n})}
+function drawZones(ctx){
+  const L=layout();
+  if(S.zones)["nav","foot","head"].forEach(k=>{const a=S.za/100,z=L[k];if(z){ctx.fillStyle=rgba(S.zone,a);ctx.fillRect(z.x,z.y,z.w,z.h)}});
+  if(S.tiles){
+    const sh=SH[S.shadow];
+    [...L.kpis,...L.charts,...(L.table?[L.table]:[])].forEach(z=>{
+      if(sh){ctx.save();ctx.beginPath();ctx.rect(0,0,W,H);rr(ctx,z.x,z.y,z.w,z.h,14,1);ctx.clip('evenodd');ctx.shadowColor='rgba(0,0,0,'+sh[2]+')';ctx.shadowBlur=sh[0];ctx.shadowOffsetY=sh[1];ctx.fillStyle='#000';rr(ctx,z.x,z.y,z.w,z.h,14);ctx.fill();ctx.restore()}
+      ctx.fillStyle=rgba(S.card,S.opacity/100);rr(ctx,z.x,z.y,z.w,z.h,14);ctx.fill()});
+    L.kpis.forEach((z,i)=>{const col=S.data[i%S.data.length],k=MET[S.kpi.m[i]]||MET.rev;
+      ctx.save();rr(ctx,z.x,z.y,z.w,z.h,14);ctx.clip();ctx.fillStyle=col;ctx.fillRect(z.x,z.y,6,z.h);ctx.restore();
+      if(S.kpi.icon!=='none'){const x=S.kpi.icon==='right'?z.x+z.w-18-46:z.x+24,y=z.y+(z.h-46)/2;
+        ctx.fillStyle=rgba(col,.16);rr(ctx,x,y,46,46,12);ctx.fill();
+        ctx.save();ctx.translate(x+10,y+10);ctx.scale(26/24,26/24);ctx.strokeStyle=col;ctx.lineWidth=2;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke(new Path2D(k[2]));ctx.restore()}});
+    ctx.fillStyle=lum(S.zones?S.zone:S.bgA)<.55?'rgba(255,255,255,.12)':'rgba(0,0,0,.10)';
+    navRects(L).forEach(z=>{rr(ctx,z.x,z.y,z.w,z.h,8);ctx.fill()});
+  }
+}
+
+// ---------- layout engine ----------
+function layout(){
+  const L={kpis:[],charts:[],warn:[],show:0},m=20,g=16,K=S.kpi,C=S.ch,T=S.tb;
+  if(W<700||H<480)L.warn.push('Small canvas: switch off some sections or pick the Minimal layout so everything fits.');
+  let x0=0,y0=0,y1=H;
+  if(S.nav.pos==='left'){L.nav={x:0,y:0,w:210,h:H};x0=210}
+  if(S.nav.pos==='top'){L.nav={x:0,y:0,w:W,h:56};y0=56}
+  if(S.foot.on){L.foot={x:x0,y:H-40,w:W-x0,h:40};y1=H-40}
+  if(S.head.on){L.head={x:x0,y:y0,w:W-x0,h:72};y0+=72}
+  const cx=x0+m,cw=W-x0-2*m,bot=y1-14;let cy=y0+8;
+  if(K.on){const w=(cw-(K.per-1)*14)/K.per;for(let r=0;r<K.rows;r++)for(let c=0;c<K.per;c++)L.kpis.push({x:cx+c*(w+14),y:cy+r*106,w,h:92});cy+=K.rows*106+2}
+  const ah=Math.max(0,bot-cy),rh=RH[T.dens];let cr,tr;
+  const need=52+rh*(T.rows+(T.hdr?1:0)+(T.total?1:0))+14;
+  if(C.on&&T.on){
+    if(T.place==='right'){const tw=Math.round(cw*.4);cr={x:cx,y:cy,w:cw-tw-g,h:ah};tr={x:cx+cw-tw,y:cy,w:tw,h:ah}}
+    else if(T.place==='above'){const th=Math.max(90,Math.min(need,ah-C.rows*130-g));tr={x:cx,y:cy,w:cw,h:th};cr={x:cx,y:cy+th+g,w:cw,h:ah-th-g}}
+    else{const th=Math.max(90,Math.min(need,ah-C.rows*130-g));cr={x:cx,y:cy,w:cw,h:ah-th-g};tr={x:cx,y:cy+ah-th,w:cw,h:th}}
+  }else if(C.on)cr={x:cx,y:cy,w:cw,h:ah};else if(T.on)tr={x:cx,y:cy,w:cw,h:ah};
+  if(cr){const w=(cr.w-(C.per-1)*g)/C.per,h=(cr.h-(C.rows-1)*g)/C.rows;
+    for(let r=0;r<C.rows;r++)for(let c=0;c<C.per;c++)L.charts.push({x:cr.x+c*(w+g),y:cr.y+r*(h+g),w,h});
+    if(h<120)L.warn.push('Charts are small ('+Math.max(0,Math.round(h))+'px tall). Use fewer chart rows or KPI rows, or turn off the table.')}
+  if(tr){L.table=tr;const fit=Math.floor((tr.h-66)/rh)-(T.hdr?1:0)-(T.total?1:0);L.show=Math.max(0,Math.min(T.rows,fit));
+    if(L.show<T.rows)L.warn.push('The table fits '+L.show+' of '+T.rows+' rows. Reduce rows, use compact density, or free up space.');
+    if(T.place==='right'&&T.cols>4)L.warn.push('Many columns in a narrow table. Reduce columns or place the table below the charts.')}
+  return L;
+}
+
+// ---------- chart SVG ----------
+function chart(t,w,h,ix){
+  const d=S.data,C=S.ch,p={l:t==='bar'?58:34,r:10,t:12,b:t==='bar'?6:24},iw=w-p.l-p.r,ih=h-p.t-p.b;
+  const M=['Jan','Feb','Mar','Apr','May','Jun','Jul'],B=['Fresh','Dairy','Snacks','Drinks','Home','Care'];
+  const V=(k,n)=>Array.from({length:n},(_,i)=>30+((i*37+k*53+ix*29)%61));
+  const tx=(x,y,q,a)=>`<text x="${x}" y="${y}" font-size="11" text-anchor="${a||'middle'}" fill="currentColor" opacity=".75">${q}</text>`;
+  let s=C.grid&&t!=='bar'&&t!=='donut'&&t!=='pie'?[0,.5,1].map(f=>`<line x1="${p.l}" x2="${w-p.r}" y1="${p.t+ih*f}" y2="${p.t+ih*f}" stroke="currentColor" opacity=".13"/>`).join(''):'';
+  if(t==='donut'||t==='pie'){
+    const v=[40,25,20,15],R=Math.min(w,h)/2-6,r=t==='pie'?R/2:R*.68,sw=t==='pie'?R:R*.6,cx=w/2,cy=h/2,c=2*Math.PI*r;let a=0;
+    v.forEach((x,i)=>{const l=c*x/100;s+=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${d[i%d.length]}" stroke-width="${sw}" stroke-dasharray="${l} ${c-l}" stroke-dashoffset="${-a}" transform="rotate(-90 ${cx} ${cy})"/>`;
+      if(C.labels){const m=(a+l/2)/c*2*Math.PI-Math.PI/2;s+=`<text x="${cx+Math.cos(m)*r}" y="${cy+Math.sin(m)*r+4}" font-size="12" text-anchor="middle" fill="${on(d[i%d.length])}">${x}%</text>`}a+=l});
+    return s;
+  }
+  if(t==='bar'){
+    const v=V(1,6),rh=ih/6,bh=rh*C.bw/100;
+    v.forEach((x,i)=>{const y=p.t+i*rh+(rh-bh)/2,l=x/100*iw;s+=`<rect x="${p.l}" y="${y}" width="${l}" height="${bh}" rx="${Math.min(C.rad,bh/2)}" fill="${d[i%d.length]}"/>`+tx(p.l-6,y+bh/2+4,B[i],'end')+(C.labels?tx(p.l+l+16,y+bh/2+4,x):'')});
+    return s;
+  }
+  const sw=iw/7,X=i=>p.l+sw*i+sw/2;
+  M.forEach((m,i)=>s+=tx(X(i),h-6,m));
+  if(t==='col'){const v=V(0,7),bw=sw*C.bw/100;v.forEach((x,i)=>{const bh=x/100*ih;s+=`<rect x="${X(i)-bw/2}" y="${p.t+ih-bh}" width="${bw}" height="${bh}" rx="${Math.min(C.rad,bw/2)}" fill="${d[i%d.length]}"/>`+(C.labels?tx(X(i),p.t+ih-bh-4,x):'')})}
+  else if(t==='stack'){const a=[V(0,7),V(1,7),V(2,7)],mx=Math.max(...a[0].map((_,i)=>a[0][i]+a[1][i]+a[2][i])),bw=sw*C.bw/100;
+    for(let i=0;i<7;i++){let y=p.t+ih;for(let k=0;k<3;k++){const bh=a[k][i]/mx*ih;y-=bh;s+=`<rect x="${X(i)-bw/2}" y="${y}" width="${bw}" height="${bh}" rx="${Math.min(C.rad,3)}" fill="${d[k%d.length]}"/>`}}}
+  else{const v=V(0,7),Y=x=>p.t+ih-x/100*ih,pts=v.map((x,i)=>`${X(i)},${Y(x)}`).join(' ');
+    if(t==='area')s+=`<polygon points="${X(0)},${p.t+ih} ${pts} ${X(6)},${p.t+ih}" fill="${rgba(d[0],.28)}"/>`;
+    s+=`<polyline points="${pts}" fill="none" stroke="${d[0]}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>`;
+    v.forEach((x,i)=>s+=`<circle cx="${X(i)}" cy="${Y(x)}" r="4" fill="${d[1%d.length]}"/>`+(C.labels?tx(X(i),Y(x)-9,x):''))}
+  return s;
+}
+
+// ---------- table / matrix ----------
+function tbl(z,L,cd){
+  const T=S.tb,d=S.data,rh=RH[T.dens],mat=T.kind==='matrix',fs=T.cols>4?12:14;
+  const cols=(mat?['Category','Q1','Q2','Q3','Q4','FY']:['Category','Orders','Revenue','Share','Margin','Growth']).slice(0,T.cols);
+  const nm=['Fresh produce','Dairy','Snacks','Beverages','Household','Personal care','Frozen','Bakery','Pet care','Stationery','Electronics','Other'];
+  const val=(r,c)=>60+((r*41+c*17)%140);
+  const f=(c,v)=>mat?(v*10).toLocaleString():c===1?(v*37).toLocaleString():c===2?'$'+v*4+'K':c===3?(v%30+2)+'%':c===4?(v%25+10)+'%':'+'+(v%15)+'%';
+  const ln=T.grid?`border-bottom:1px solid ${rgba(S.text,.12)};`:'';
+  let r='';
+  if(T.hdr)r+=`<tr style="background:${d[0]};color:${on(d[0])}">${cols.map((c,i)=>`<th style="text-align:${i?S.al.table:'left'};padding:0 10px;height:${rh}px;font-weight:600">${c}</th>`).join('')}</tr>`;
+  for(let i=0;i<L.show;i++){
+    r+=`<tr style="${T.band&&i%2?`background:${rgba(S.text,.05)}`:''}">${cols.map((c,j)=>{
+      if(!j)return `<td style="padding:0 10px;height:${rh}px;${ln}">${nm[i]}</td>`;
+      const v=val(i,j);let bg='';
+      if(T.cf)bg=mat?`background:${rgba(d[0],.08+.5*(v-60)/140)};`:j===2?`background:linear-gradient(90deg,${rgba(d[1%d.length],.38)} ${(v-40)/1.8}%,transparent 0);`:'';
+      return `<td style="text-align:${S.al.table};padding:0 10px;${ln}${bg}">${f(j,v)}</td>`}).join('')}</tr>`}
+  if(T.total){const sm=c=>{let q=0;for(let i=0;i<L.show;i++)q+=val(i,c);return q};
+    r+=`<tr style="font-weight:700;border-top:2px solid ${rgba(S.text,.4)}">${cols.map((c,j)=>`<td style="${j?`text-align:${S.al.table};`:''}padding:0 10px;height:${rh}px">${!j?'Total':(mat||j<3)?f(j,sm(j)):'—'}</td>`).join('')}</tr>`}
+  return `<div style="${cd(z)}"><b style="display:block;text-align:${S.al.table==='center'?'center':'left'};font-size:16px;color:${S.title};font-family:${FONTS[S.brand.hf]}">${mat?'Category by quarter':'Top categories'}</b><table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:${fs}px">${r}</table></div>`;
+}
+
+// ---------- preview ----------
+function renderMock(){
+  const d=S.data,cardBg=S.tiles?'transparent':rgba(S.card,S.opacity/100),tc=S.text,L=layout(),K=S.kpi;
+  const bt=lum(S.zones?S.zone:S.bgA)<.55?'#FFFFFF':S.title;
+  const hf=FONTS[S.brand.hf]||FONTS['Segoe UI'],bf=FONTS[S.brand.bf]||FONTS['Segoe UI'];
+  const JC={left:'flex-start',center:'center',right:'flex-end'},kj=a=>a==='center'?'center':a==='left'?(K.icon==='right'?'space-between':'flex-start'):(K.icon==='right'?'flex-start':'flex-end');
+  const pos=z=>`left:${z.x}px;top:${z.y}px;width:${z.w}px;height:${z.h}px;`;
+  const sh=SH[S.shadow],cd=z=>`position:absolute;${pos(z)}background:${cardBg};color:${tc};border-radius:14px;padding:14px 18px;overflow:hidden;${!S.tiles&&sh?`box-shadow:0 ${sh[1]}px ${sh[0]}px rgba(0,0,0,${sh[2]});`:''}`;
+  let h='';
+  navRects(L).forEach((z,i)=>{h+=`<div style="position:absolute;${pos(z)}display:flex;align-items:center;justify-content:${JC[S.al.nav]};padding:0 12px;border-radius:8px;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;${i?`color:${bt};opacity:.8`:`background:${lum(S.zones?S.zone:S.bgA)<.55?'rgba(255,255,255,.22)':rgba(S.title,.12)};color:${bt};font-weight:600`}">${esc(z.n)}</div>`});
+  if(L.head){const hd=S.head,
+    lg=hd.mode!=='text'?(S.logo?`<img src="${S.logo}" alt="" style="height:46px;max-width:170px;object-fit:contain">`:`<span style="width:44px;height:44px;border-radius:12px;background:${bt};color:${S.zones?S.zone:S.bgA};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px">${esc((hd.title||'A')[0].toUpperCase())}</span>`):'',
+    tt=hd.mode!=='logo'?`<div style="text-align:${S.al.head}"><div style="font-size:28px;font-family:${hf};font-weight:800;letter-spacing:-.02em;line-height:1.1">${esc(hd.title)}</div><div style="font-size:13px;opacity:.75">${esc(hd.sub)}</div></div>`:'';
+    h+=`<div style="position:absolute;${pos(L.head)}color:${bt};display:flex;align-items:center;justify-content:${JC[S.al.head]};gap:14px;padding:0 24px">${lg}${tt}</div>`}
+  L.kpis.forEach((z,i)=>{const k=MET[K.m[i]]||MET.rev,col=d[i%d.length],big=z.w>200?30:24;
+    const ic=K.icon==='none'?'':`<span style="flex:none;width:46px;height:46px;border-radius:12px;background:${rgba(col,.16)};color:${col};display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${k[2]}"/></svg></span>`;
+    h+=`<div style="${cd(z)}display:flex;align-items:center;gap:14px;border-left:6px solid ${S.tiles?'transparent':col};${K.icon==='right'?'flex-direction:row-reverse;':''}">${ic}<div style="min-width:0;flex:1;text-align:${S.al.kpi}"><small style="opacity:.7;font-size:14px">${k[0]}</small><b style="display:block;font-family:${hf};color:${S.title};font-size:${big}px;font-weight:800;line-height:1.15">${k[1]}</b></div></div>`});
+  L.charts.forEach((z,i)=>{const t=S.ch.types[i]||'col',cw=Math.max(40,z.w-36),chh=Math.max(40,z.h-56);
+    h+=`<div style="${cd(z)}"><b style="display:block;text-align:${S.al.chart};font-size:16px;color:${S.title};font-family:${hf}">${CTITLE[t]}</b><svg viewBox="0 0 ${cw} ${chh}" style="width:${cw}px;height:${chh}px;display:block;margin-top:6px">${chart(t,cw,chh,i)}</svg></div>`});
+  if(L.table)h+=tbl(L.table,L,cd);
+  if(L.foot){const fa=S.al.foot;h+=`<div style="position:absolute;${pos(L.foot)}color:${bt};display:flex;align-items:center;justify-content:${fa==='center'?'center':'space-between'};${fa==='right'?'flex-direction:row-reverse;':''}padding:0 24px;font-size:13px;opacity:.9"><span>${esc(S.foot.text)}</span>${fa==='center'?'':'<span>Page 1 of 3</span>'}</div>`}
+  $('mock').style.fontFamily=bf;$('mock').innerHTML=h;
+  $('warn').textContent=L.warn.join(' ');
+}
+
+// ---------- landing page ----------
+function applySize(){
+  const z=S.size;if(z.preset!=='custom'&&SZ[z.preset]){z.w=SZ[z.preset][0];z.h=SZ[z.preset][1]}
+  z.w=Math.min(4000,Math.max(200,Math.round(+z.w||1280)));z.h=Math.min(4000,Math.max(200,Math.round(+z.h||720)));W=z.w;H=z.h;
+  const b=$('box'),f=$('frame');b.style.width=W+'px';b.style.height=H+'px';f.style.aspectRatio=W+' / '+H;f.style.maxWidth='calc(88vh * '+(W/H)+')';f.style.margin='0 auto';f.style.width='100%';
+  SYNC.forEach(g=>g());fit();
+}
+function syncView(){if(!S.land.on)S.view='dash'}
+function tile(ctx,z,r,fill){const sh=SH[S.shadow];
+  if(sh){ctx.save();ctx.beginPath();ctx.rect(0,0,W,H);rr(ctx,z.x,z.y,z.w,z.h,r,1);ctx.clip('evenodd');ctx.shadowColor='rgba(0,0,0,'+sh[2]+')';ctx.shadowBlur=sh[0];ctx.shadowOffsetY=sh[1];ctx.fillStyle='#000';rr(ctx,z.x,z.y,z.w,z.h,r);ctx.fill();ctx.restore()}
+  ctx.fillStyle=fill;rr(ctx,z.x,z.y,z.w,z.h,r);ctx.fill()}
+function landDesign(){
+  const L=S.land,it=S.nav.items.split(',').map(x=>x.trim()).filter(Boolean).slice(0,5),cf=rgba(S.card,S.opacity/100),g={panels:[],texts:[],cards:[],btn:null,bgFill:null};
+  const T=(k,x,y,w,h,a,size,surf)=>g.texts.push({k,x,y,w,h,a,size,surf});
+  const B=(x,y)=>{if(L.btn)g.btn={x,y,w:200,h:56}};
+  const ly=L.layout;
+  if(ly==='center'){
+    g.panels.push({x:240,y:130,w:800,h:460,r:20,fill:cf,shadow:true},{x:590,y:165,w:100,h:6,r:3,fill:S.zone});
+    T('kick',300,190,680,30,'center',20,'card');T('head',300,232,680,160,'center',60,'card');T('sub',300,400,680,60,'center',20,'card');B(540,490);
+  }else if(ly==='left'){
+    g.panels.push({x:760,y:0,w:520,h:720,r:0,fill:S.zone},{x:830,y:140,w:380,h:440,r:24,fill:'rgba(255,255,255,.12)'});
+    T('kick',80,200,620,30,'left',20,'bg');T('head',80,240,620,190,'left',64,'bg');T('sub',80,440,600,70,'left',20,'bg');B(80,540);
+  }else if(ly==='split'){
+    g.panels.push({x:0,y:0,w:640,h:720,r:0,fill:S.zone});
+    T('kick',70,210,520,30,'left',20,'zone');T('head',70,250,520,200,'left',56,'zone');T('sub',70,470,500,80,'left',20,'zone');
+    it.forEach((n,i)=>g.cards.push({x:700,y:110+i*100,w:520,h:80,n}));
+  }else if(ly==='banner'){
+    g.panels.push({x:0,y:0,w:1280,h:300,r:0,fill:S.zone});
+    T('kick',80,70,1100,30,'left',20,'zone');T('head',80,110,1100,110,'left',60,'zone');T('sub',80,228,1000,50,'left',20,'zone');
+    const n=Math.min(4,it.length)||1,w=(1120-(n-1)*24)/n;it.slice(0,4).forEach((t,i)=>g.cards.push({x:80+i*(w+24),y:350,w,h:260,n:t}));B(80,640);
+  }else{
+    g.bgFill=S.zone;
+    g.panels.push({x:880,y:-80,w:520,h:520,r:260,fill:'rgba(255,255,255,.08)'},{x:700,y:380,w:320,h:320,r:160,fill:'rgba(255,255,255,.06)'});
+    T('kick',80,360,900,30,'left',20,'zone');T('head',80,400,900,170,'left',72,'zone');T('sub',80,590,760,70,'left',20,'zone');
+  }
+  return g;
+}
+function landGeo(){const g=landDesign(),k=W/1280,m=H/720,u=Math.min(k,m);
+  const sc=z=>Object.assign({},z,{x:z.x*k,y:z.y*m,w:z.w*k,h:z.h*m,r:z.r==null?z.r:z.r*u,size:z.size==null?z.size:z.size*u});
+  g.panels=g.panels.map(sc);g.texts=g.texts.map(sc);g.cards=g.cards.map(sc);if(g.btn)g.btn=sc(g.btn);return g}
+function drawLand(ctx){
+  const g=landGeo();
+  if(g.bgFill){ctx.fillStyle=g.bgFill;ctx.fillRect(0,0,W,H)}else drawBg(ctx);
+  g.panels.forEach(q=>{if(q.shadow)tile(ctx,q,q.r,q.fill);else{ctx.fillStyle=q.fill;rr(ctx,q.x,q.y,q.w,q.h,q.r);ctx.fill()}});
+  g.cards.forEach(c=>tile(ctx,c,14*Math.min(W/1280,H/720),rgba(S.card,S.opacity/100)));
+  if(g.btn){ctx.fillStyle=S.zone;rr(ctx,g.btn.x,g.btn.y,g.btn.w,g.btn.h,10*Math.min(W/1280,H/720));ctx.fill()}
+}
+function renderLand(){
+  const g=landGeo(),L=S.land,hf=FONTS[S.brand.hf]||FONTS['Segoe UI'],bf=FONTS[S.brand.bf]||FONTS['Segoe UI'];
+  const zt=lum(S.zone)<.55?'#FFFFFF':S.title,bgd=lum(S.bgA)<.55;
+  const pos=z=>`left:${z.x}px;top:${z.y}px;width:${z.w}px;height:${z.h}px;`;
+  const col=(surf,k)=>surf==='zone'?zt:surf==='bg'&&bgd?'#FFFFFF':k==='head'?S.title:S.text;
+  let h='';
+  g.texts.forEach(t=>{const v=L[t.k];if(!v)return;h+=`<div style="position:absolute;${pos(t)}overflow:hidden;color:${col(t.surf,t.k)};text-align:${t.a};font-family:${t.k==='head'?hf:bf};font-size:${t.size}px;font-weight:${t.k==='head'?800:t.k==='kick'?600:400};line-height:1.12;letter-spacing:${t.k==='head'?'-.02em':'0'}">${esc(v)}</div>`});
+  const bn=L.layout==='banner';
+  g.cards.forEach(c=>{h+=`<div style="position:absolute;${pos(c)}display:flex;align-items:${bn?'flex-end':'center'};padding:${bn?'0 20px 20px':'0 24px'};color:${S.title};font-family:${hf};font-size:${Math.round(20*Math.min(W/1280,H/720))}px;font-weight:600">${esc(c.n)}</div>`});
+  if(g.btn)h+=`<div style="position:absolute;${pos(g.btn)}display:flex;align-items:center;justify-content:center;color:${on(S.zone)};font-family:${bf};font-size:${Math.round(18*Math.min(W/1280,H/720))}px;font-weight:600">${esc(L.btn)}</div>`;
+  $('mock').style.cssText='position:absolute;inset:0;padding:0';
+  $('mock').style.fontFamily=bf;$('mock').innerHTML=h;$('warn').textContent='';
+}
+
+// ---------- theme JSON ----------
+function buildTheme(){
+  const so=c=>({solid:{color:c}});
+  return {name:"Theme Studio custom",dataColors:S.data,background:S.card,foreground:S.text,tableAccent:S.data[0],good:S.sc.good,neutral:S.sc.neutral,bad:S.sc.bad,"null":S.sc.nul,firstLevelElements:S.text,textClasses:{callout:{fontSize:32,fontFace:S.brand.hf,color:S.title},title:{fontSize:14,fontFace:S.brand.hf,color:S.title},header:{fontSize:12,fontFace:S.brand.bf,color:S.text},label:{fontSize:10,fontFace:S.brand.bf,color:S.text}},
+    visualStyles:{"*":{"*":{background:[{color:so(S.card),transparency:S.tiles?100:100-S.opacity,show:true}],title:[{fontColor:so(S.title),alignment:S.al.chart}],border:[{show:false}]}},
+      page:{"*":{background:[{color:so(S.bgA),transparency:0}]}}}};
+}
+function renderCanvas(kind){const c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');if(kind==='land')drawLand(x);else{drawBg(x);drawZones(x)}return c}
+function draw(){
+  syncView();
+  const land=S.view==='land'&&S.land.on;
+  $('box').style.backgroundImage=`url(${renderCanvas(land?'land':'dash').toDataURL('image/png')})`;
+  if(land)renderLand();else renderMock();
+  $('json').value=JSON.stringify(buildTheme(),null,2);
+  $('tabs').hidden=!S.land.on;$('dlLand').hidden=!S.land.on;
+  $('sz').textContent='Canvas '+W+' × '+H+' px';
+  $('tDash').setAttribute('aria-selected',!land);$('tLand').setAttribute('aria-selected',land);
+}
+function update(d){if(d)buildDyn();draw()}
+function fit(){$('box').style.transform=`scale(${$('frame').clientWidth/W})`}
+window.addEventListener('resize',fit);
+
+// ---------- export ----------
+function say(t){$('msg').textContent=t}
+let dl=null;
+const CFG=window.APP_CONFIG||{};
+const LS='pbts.designs';
+function usedDesigns(){try{return JSON.parse(localStorage.getItem(LS)||'[]')}catch(e){return[]}}
+function fp(){const o=JSON.parse(JSON.stringify(S));delete o.view;o.logo=o.logo?o.logo.length:0;const t=JSON.stringify(o);let h=5381;for(let i=0;i<t.length;i++)h=((h<<5)+h+t.charCodeAt(i))|0;return String(h)}
+let user=null,fb=null;
+const em=x=>((x&&x.code)||'').replace('auth/','').replace(/-/g,' ')||'Something went wrong. Try again.';
+function quota(){
+  const q=$('quota');if(!CFG.gate){q.textContent='';return}
+  const m=CFG.freeDesigns||3;
+  if(user){q.innerHTML='Signed in as '+esc(user.email||'your account')+'. <a href="#" id="so">Sign out</a>';$('so').onclick=e=>{e.preventDefault();fb.au.signOut(fb.auth)}}
+  else{q.innerHTML='Free downloads: '+Math.min(usedDesigns().length,m)+' of '+m+' designs used. <a href="#" id="li">Log in</a> for more.';$('li').onclick=e=>{e.preventDefault();openLogin()}}
+}
+async function initFb(){
+  if(fb)return fb;const c=CFG.firebase;if(!c||!c.apiKey)return null;
+  try{const B='https://www.gstatic.com/firebasejs/10.12.2/',[a,au]=await Promise.all([import(B+'firebase-app.js'),import(B+'firebase-auth.js')]);
+    const auth=au.getAuth(a.initializeApp(c));fb={au,auth};au.onAuthStateChanged(auth,u=>{user=u;quota()});return fb}
+  catch(e){$('dlgE').textContent='Could not load login. Check your connection.';return null}
+}
+function openLogin(msg){
+  const ok=!!(CFG.firebase&&CFG.firebase.apiKey);
+  $('dlgM').textContent=ok?(msg||'Log in or create a free account.'):'Login is not set up on this site yet. The site owner needs to add Firebase details in config.js.';
+  $('gBtn').hidden=!ok;$('authRows').hidden=!ok;$('dlgE').textContent='';
+  if(ok)initFb();$('dlg').showModal();
+}
+$('gBtn').onclick=async()=>{const f=await initFb();if(!f)return;try{await f.au.signInWithPopup(f.auth,new f.au.GoogleAuthProvider());$('dlg').close()}catch(x){$('dlgE').textContent=em(x)}};
+async function emailAuth(create){const f=await initFb();if(!f)return;$('dlgE').textContent='';
+  try{await (create?f.au.createUserWithEmailAndPassword:f.au.signInWithEmailAndPassword)(f.auth,$('em').value.trim(),$('pw').value);$('dlg').close()}catch(x){$('dlgE').textContent=em(x)}}
+$('siBtn').onclick=()=>emailAuth(false);$('suBtn').onclick=()=>emailAuth(true);$('dlgX').onclick=()=>$('dlg').close();
+// one "design" = one distinct set of settings; theme, background and landing files of the same design count once
+async function gateOk(){
+  if(!CFG.gate||user)return true;
+  const u=usedDesigns(),f=fp(),m=CFG.freeDesigns||3;
+  if(u.includes(f))return true;
+  if(u.length<m){try{localStorage.setItem(LS,JSON.stringify(u.concat(f)))}catch(e){}quota();return true}
+  openLogin('You have used your '+m+' free designs. Log in to keep downloading.');return false;
+}
+function plainSave(name,data){const b=data instanceof Blob?data:new Blob([data],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000)}
+async function save(name,data){
+  if(!(await gateOk()))return;
+  if(dl){try{await dl.save({filename:name,data});say('Saved '+name)}catch(e){say(e&&e.code==='declined'?'Download cancelled.':'Could not save the file: '+(e&&e.message||'unknown error'))}return}
+  if(!window.claude){plainSave(name,data);say('Saved '+name);return}
+  say('Downloads are not available in this view. Copy the JSON from the box below.');
+}
+$('dlTheme').onclick=()=>save('powerbi-theme.json',$('json').value);
+$('dlBg').onclick=()=>renderCanvas('dash').toBlob(b=>b&&save('powerbi-background-'+W+'x'+H+'.png',b),'image/png');
+$('dlLand').onclick=()=>renderCanvas('land').toBlob(b=>b&&save('powerbi-landing-background-'+W+'x'+H+'.png',b),'image/png');
+$('tDash').onclick=()=>{S.view='dash';draw()};$('tLand').onclick=()=>{S.view='land';draw()};
+$('copyJson').onclick=async()=>{try{await navigator.clipboard.writeText($('json').value);say('Theme JSON copied.')}catch(e){$('json').select();say('Select the text in the box and copy it (Ctrl+C).')}};
+
+buildData();buildDyn();applySize();applyBrand();fit();quota();if(CFG.gate)initFb();
+try{if(window.claude&&claude.use)claude.use('downloads').then(m=>{dl=m}).catch(()=>{})}catch(e){}
+</script>
+</body>
+</html>
